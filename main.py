@@ -3,7 +3,7 @@ import sqlparse
 import pyodbc
 import build
 """
-Run a database trace with "RPC Completed" selected.  Save the trace in XML format.  Use that file's 
+Run a database trace with "RPC Completed" and "SP Completed" selected.  Save the trace in XML format.  Use that file's 
 name and path in the 'open' statement below.
 """
 
@@ -39,19 +39,17 @@ if __name__ == '__main__':
             break
         if "exec sp_executesql N'" in line:
             line = re.sub(CLEANR, '', line)
-            line = line.replace("\r", "")
+            line = line.replace("\r", " ")
             line = line.replace("exec sp_executesql N'", "'")
             line = line.replace(",N'", ",'")
 
             match = re.findall(CSV, line.strip(" "))
-            print(match)
             query = match[0]
             query = query.replace("&lt;", "<")
             query = query.replace("&gt;", ">")
             query = query.replace("''", "'")
-            print("query: ", query)
             params = match[1]
-            print("params: ", params)
+            print(params)
             variables = []
             i = 2
             while i < len(match)-1:
@@ -60,24 +58,46 @@ if __name__ == '__main__':
             print("variables: ", variables)
             i = 1
             query = query.strip("'")
+            query2 = str(query)
             for variable in variables:
                 query = query.replace("@P" + str(i), variable)
+                query2 = query2.replace("@P" + str(i), "#{P" + str(i) + "}")
                 i = i + 1
             print("")
             print("Parameter QUERY: ")
             print(sqlparse.format(query, reindent=True, keyword_case="upper"))
             print("")
+            print(sqlparse.format(query2, reindent=True, keyword_case="upper"))
+            print("")
 
-            selectCount = 0
             if query.lower().startswith("select"):
                 cur = connPlay.cursor()
                 cur.execute(query)
-                ret = [x[0] for x in cur.fetchall()]
+                for x in cur.fetchall():
+                    print(x)
                 cur.close()
-                print(ret)
-                selectCount = selectCount + 1
-                if selectCount > 5:
-                    break
+                print()
+                print()
+                print()
+        elif 'name="TextData"' in line:
+            line = re.sub(CLEANR, '', line)
+            line = line.replace("\r", " ")
+            line = line.strip(" ")
+            query = line
+            query = query.replace("&lt;", "<")
+            query = query.replace("&gt;", ">")
+            print("")
+            print(sqlparse.format(query, reindent=True, keyword_case="upper"))
+            print("")
+            if query.lower().startswith("select") and '@' not in query:
+                cur = connPlay.cursor()
+                cur.execute(query)
+                for x in cur.fetchall():
+                    print(x)
+                cur.close()
+                print()
+                print()
+                print()
 
 
 
