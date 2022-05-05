@@ -32,7 +32,7 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    file1 = open(r'D:\geoff.ritchey\git\trace.xml', 'r', encoding='utf-16', newline="\r\n")
+    file1 = open(r'C:\Users\geoff.ritchey\Documents\GitHub\campus\db\trace.xml', 'r', encoding='utf-16', newline="\r\n")
     while True:
         line = file1.readline()
         if not line:
@@ -72,13 +72,16 @@ if __name__ == '__main__':
 
             if query.lower().startswith("select"):
                 cur = connPlay.cursor()
-                cur.execute(query)
-                for x in cur.fetchall():
-                    print(x)
-                cur.close()
-                print()
-                print()
-                print()
+                try:
+                    cur.execute(query)
+                    for x in cur.fetchall():
+                        print(x)
+                    cur.close()
+                    print()
+                    print()
+                    print()
+                except:
+                    pass
         elif 'name="TextData"' in line:
             line = re.sub(CLEANR, '', line)
             line = line.replace("\r", " ")
@@ -89,15 +92,18 @@ if __name__ == '__main__':
             print("")
             print(sqlparse.format(query, reindent=True, keyword_case="upper"))
             print("")
-            if query.lower().startswith("select") and '@' not in query:
-                cur = connPlay.cursor()
-                cur.execute(query)
-                for x in cur.fetchall():
-                    print(x)
-                cur.close()
-                print()
-                print()
-                print()
+            try:
+                if query.lower().startswith("select") and '@' not in query:
+                    cur = connPlay.cursor()
+                    cur.execute(query)
+                    for x in cur.fetchall():
+                        print(x)
+                    cur.close()
+                    print()
+                    print()
+                    print()
+            except:
+                pass
 
 
 
